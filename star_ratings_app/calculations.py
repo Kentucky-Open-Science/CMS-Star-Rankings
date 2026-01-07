@@ -666,5 +666,5 @@ def get_hospital_data(provider_id):
 
 if __name__ == '__main__':
     print("Starting CMS Star Rankings Calculator...")
-    print("Open http://localhost:5000 in your browser")
-    app.run(debug=True, port=5000)
+    print("Open http://localhost:5555 in your browser")
+    app.run(debug=True, port=5555)

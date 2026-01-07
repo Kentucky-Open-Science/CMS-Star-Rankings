@@ -45,7 +45,7 @@ The calculation logic is a direct port of the Yale CORE SAS Package (July 2025),
    python calculations.py
    ```
 3. Open your web browser and go to:
-   [http://localhost:5000](http://localhost:5000)
+   [http://localhost:5555](http://localhost:5555)
 
 ## Project Structure
 
