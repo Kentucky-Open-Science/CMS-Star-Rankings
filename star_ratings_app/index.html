@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMS Hospital Star Ratings Calculator</title>
+    <meta name="description" content="Calculate your hospital's CMS star rating based on quality measures">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">★</div>
+                <div class="logo-text">
+                    <h1>Hospital STAR Ratings</h1>
+                    <p>CMS Quality Calculator</p>
+                </div>
+            </div>
+            <div class="header-controls">
+                <div class="hospital-selector">
+                    <div class="hospital-search-container">
+                        <input type="text" id="hospital-search" placeholder="Search hospital..." autocomplete="off">
+                        <div id="hospital-results" class="dropdown-list"></div>
+                    </div>
+                </div>
+                <div class="measure-badge">July 2025 Methodology</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="intro">
+            <h2>Calculate Your Hospital's Star Rating</h2>
+            <p>Enter your hospital's quality measure scores below. The calculator uses the official CMS methodology to
+                determine your star rating based on 46 quality measures across 5 domains.</p>
+        </section>
+
+        <div class="main-grid">
+            <div class="measures-form">
+                <!-- Mortality Group -->
+                <div class="card measure-section">
+                    <div class="measure-header" onclick="toggleSection('mortality')">
+                        <div class="measure-header-left">
+                            <div class="measure-icon mortality">💔</div>
+                            <div class="measure-title">
+                                <h3>Outcomes - Mortality</h3>
+                                <p>7 measures • Weight: 22%</p>
+                            </div>
+                        </div>
+                        <div class="measure-badge" id="mortality-count">0/7 entered</div>
+                        <svg class="chevron" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                        </svg>
+                    </div>
+                    <div class="measure-content" id="mortality-content">
+                        <div class="measure-grid">
+                            <div class="input-group">
+                                <label for="MORT_30_AMI">MORT_30_AMI</label>
+                                <input type="number" step="any" id="MORT_30_AMI" name="MORT_30_AMI"
+                                    placeholder="Enter rate">
+                                <div class="input-hint">30-Day Mortality - Heart Attack</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="MORT_30_CABG">MORT_30_CABG</label>
+                                <input type="number" step="any" id="MORT_30_CABG" name="MORT_30_CABG"
+                                    placeholder="Enter rate">
+                                <div class="input-hint">30-Day Mortality - CABG Surgery</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="MORT_30_COPD">MORT_30_COPD</label>
+                                <input type="number" step="any" id="MORT_30_COPD" name="MORT_30_COPD"
+                                    placeholder="Enter rate">
+                                <div class="input-hint">30-Day Mortality - COPD</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="MORT_30_HF">MORT_30_HF</label>
+                                <input type="number" step="any" id="MORT_30_HF" name="MORT_30_HF"
+                                    placeholder="Enter rate">
+                                <div class="input-hint">30-Day Mortality - Heart Failure</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="MORT_30_PN">MORT_30_PN</label>
+                                <input type="number" step="any" id="MORT_30_PN" name="MORT_30_PN"
+                                    placeholder="Enter rate">
+                                <div class="input-hint">30-Day Mortality - Pneumonia</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="MORT_30_STK">MORT_30_STK</label>
+                                <input type="number" step="any" id="MORT_30_STK" name="MORT_30_STK"
+                                    placeholder="Enter rate">
+                                <div class="input-hint">30-Day Mortality - Stroke</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="PSI_4_SURG_COMP">PSI_4_SURG_COMP</label>
+                                <input type="number" step="any" id="PSI_4_SURG_COMP" name="PSI_4_SURG_COMP"
+                                    placeholder="Enter rate">
+                                <div class="input-hint">Death Rate Among Surgical Patients</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Safety Group -->
+                <div class="card measure-section">
+                    <div class="measure-header" onclick="toggleSection('safety')">
+                        <div class="measure-header-left">
+                            <div class="measure-icon safety">🛡️</div>
+                            <div class="measure-title">
+                                <h3>Outcomes - Safety of Care</h3>
+                                <p>8 measures • Weight: 22%</p>
+                            </div>
+                        </div>
+                        <div class="measure-badge" id="safety-count">0/8 entered</div>
+                        <svg class="chevron" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                        </svg>
+                    </div>
+                    <div class="measure-content" id="safety-content">
+                        <div class="measure-grid">
+                            <div class="input-group">
+                                <label for="COMP_HIP_KNEE">COMP_HIP_KNEE</label>
+                                <input type="number" step="any" id="COMP_HIP_KNEE" name="COMP_HIP_KNEE"
+                                    placeholder="Enter rate">
+                                <div class="input-hint">Hip/Knee Complication Rate</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="HAI_1">HAI_1 (CLABSI)</label>
+                                <input type="number" step="any" id="HAI_1" name="HAI_1" placeholder="Enter SIR">
+                                <div class="input-hint">Central Line-Associated BSI</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="HAI_2">HAI_2 (CAUTI)</label>
+                                <input type="number" step="any" id="HAI_2" name="HAI_2" placeholder="Enter SIR">
+                                <div class="input-hint">Catheter-Associated UTI</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="HAI_3">HAI_3 (SSI Colon)</label>
+                                <input type="number" step="any" id="HAI_3" name="HAI_3" placeholder="Enter SIR">
+                                <div class="input-hint">SSI - Colon Surgery</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="HAI_4">HAI_4 (SSI Hysterectomy)</label>
+                                <input type="number" step="any" id="HAI_4" name="HAI_4" placeholder="Enter SIR">
+                                <div class="input-hint">SSI - Abdominal Hysterectomy</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="HAI_5">HAI_5 (MRSA)</label>
+                                <input type="number" step="any" id="HAI_5" name="HAI_5" placeholder="Enter SIR">
+                                <div class="input-hint">MRSA Bacteremia</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="HAI_6">HAI_6 (C.diff)</label>
+                                <input type="number" step="any" id="HAI_6" name="HAI_6" placeholder="Enter SIR">
+                                <div class="input-hint">C. difficile Infection</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="PSI_90_SAFETY">PSI_90_SAFETY</label>
+                                <input type="number" step="any" id="PSI_90_SAFETY" name="PSI_90_SAFETY"
+                                    placeholder="Enter rate">
+                                <div class="input-hint">Patient Safety Composite</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Readmission Group -->
+                <div class="card measure-section">
+                    <div class="measure-header" onclick="toggleSection('readmission')">
+                        <div class="measure-header-left">
+                            <div class="measure-icon readmission">🔄</div>
+                            <div class="measure-title">
+                                <h3>Outcomes - Readmission</h3>
+                                <p>11 measures • Weight: 22%</p>
+                            </div>
+                        </div>
+                        <div class="measure-badge" id="readmission-count">0/11 entered</div>
+                        <svg class="chevron" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                        </svg>
+                    </div>
+                    <div class="measure-content" id="readmission-content">
+                        <div class="measure-grid">
+                            <div class="input-group">
+                                <label for="EDAC_30_AMI">EDAC_30_AMI</label>
+                                <input type="number" step="any" id="EDAC_30_AMI" name="EDAC_30_AMI"
+                                    placeholder="Enter rate">
+                                <div class="input-hint">ED Visits After AMI Discharge</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="EDAC_30_HF">EDAC_30_HF</label>
+                                <input type="number" step="any" id="EDAC_30_HF" name="EDAC_30_HF"
+                                    placeholder="Enter rate">
+                                <div class="input-hint">ED Visits After HF Discharge</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="EDAC_30_PN">EDAC_30_PN</label>
+                                <input type="number" step="any" id="EDAC_30_PN" name="EDAC_30_PN"
+                                    placeholder="Enter rate">
+                                <div class="input-hint">ED Visits After PN Discharge</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="OP_32">OP_32</label>
+                                <input type="number" step="any" id="OP_32" name="OP_32" placeholder="Enter rate">
+                                <div class="input-hint">ED Returns - Colonoscopy</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="READM_30_CABG">READM_30_CABG</label>
+                                <input type="number" step="any" id="READM_30_CABG" name="READM_30_CABG"
+                                    placeholder="Enter rate">
+                                <div class="input-hint">30-Day Readmission - CABG</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="READM_30_COPD">READM_30_COPD</label>
+                                <input type="number" step="any" id="READM_30_COPD" name="READM_30_COPD"
+                                    placeholder="Enter rate">
+                                <div class="input-hint">30-Day Readmission - COPD</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="READM_30_HIP_KNEE">READM_30_HIP_KNEE</label>
+                                <input type="number" step="any" id="READM_30_HIP_KNEE" name="READM_30_HIP_KNEE"
+                                    placeholder="Enter rate">
+                                <div class="input-hint">30-Day Readmission - Hip/Knee</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="READM_30_HOSP_WIDE">READM_30_HOSP_WIDE</label>
+                                <input type="number" step="any" id="READM_30_HOSP_WIDE" name="READM_30_HOSP_WIDE"
+                                    placeholder="Enter rate">
+                                <div class="input-hint">Hospital-Wide Readmission</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="OP_35_ADM">OP_35_ADM</label>
+                                <input type="number" step="any" id="OP_35_ADM" name="OP_35_ADM"
+                                    placeholder="Enter rate">
+                                <div class="input-hint">Admissions for ED Patients</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="OP_35_ED">OP_35_ED</label>
+                                <input type="number" step="any" id="OP_35_ED" name="OP_35_ED" placeholder="Enter rate">
+                                <div class="input-hint">ED Visits for ED Patients</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="OP_36">OP_36</label>
+                                <input type="number" step="any" id="OP_36" name="OP_36" placeholder="Enter rate">
+                                <div class="input-hint">Hospital Visits After Outpatient Surgery</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patient Experience Group -->
+                <div class="card measure-section">
+                    <div class="measure-header" onclick="toggleSection('experience')">
+                        <div class="measure-header-left">
+                            <div class="measure-icon experience">😊</div>
+                            <div class="measure-title">
+                                <h3>Patient Experience</h3>
+                                <p>8 measures • Weight: 22%</p>
+                            </div>
+                        </div>
+                        <div class="measure-badge" id="experience-count">0/8 entered</div>
+                        <svg class="chevron" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                        </svg>
+                    </div>
+                    <div class="measure-content" id="experience-content">
+                        <div class="measure-grid">
+                            <div class="input-group">
+                                <label for="H_COMP_1_STAR_RATING">H_COMP_1 - Communication with Nurses</label>
+                                <input type="number" step="any" min="1" max="5" id="H_COMP_1_STAR_RATING"
+                                    name="H_COMP_1_STAR_RATING" placeholder="1-5 star rating">
+                                <div class="input-hint">HCAHPS Nurse Communication</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="H_COMP_2_STAR_RATING">H_COMP_2 - Communication with Doctors</label>
+                                <input type="number" step="any" min="1" max="5" id="H_COMP_2_STAR_RATING"
+                                    name="H_COMP_2_STAR_RATING" placeholder="1-5 star rating">
+                                <div class="input-hint">HCAHPS Doctor Communication</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="H_COMP_3_STAR_RATING">H_COMP_3 - Staff Responsiveness</label>
+                                <input type="number" step="any" min="1" max="5" id="H_COMP_3_STAR_RATING"
+                                    name="H_COMP_3_STAR_RATING" placeholder="1-5 star rating">
+                                <div class="input-hint">HCAHPS Staff Responsiveness</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="H_COMP_5_STAR_RATING">H_COMP_5 - Communication About Medicines</label>
+                                <input type="number" step="any" min="1" max="5" id="H_COMP_5_STAR_RATING"
+                                    name="H_COMP_5_STAR_RATING" placeholder="1-5 star rating">
+                                <div class="input-hint">HCAHPS Medicine Communication</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="H_COMP_6_STAR_RATING">H_COMP_6 - Discharge Information</label>
+                                <input type="number" step="any" min="1" max="5" id="H_COMP_6_STAR_RATING"
+                                    name="H_COMP_6_STAR_RATING" placeholder="1-5 star rating">
+                                <div class="input-hint">HCAHPS Discharge Info</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="H_COMP_7_STAR_RATING">H_COMP_7 - Care Transition</label>
+                                <input type="number" step="any" min="1" max="5" id="H_COMP_7_STAR_RATING"
+                                    name="H_COMP_7_STAR_RATING" placeholder="1-5 star rating">
+                                <div class="input-hint">HCAHPS Care Transition</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="H_GLOB_STAR_RATING">H_GLOB - Overall Rating</label>
+                                <input type="number" step="any" min="1" max="5" id="H_GLOB_STAR_RATING"
+                                    name="H_GLOB_STAR_RATING" placeholder="1-5 star rating">
+                                <div class="input-hint">HCAHPS Overall Rating</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="H_INDI_STAR_RATING">H_INDI - Recommend Hospital</label>
+                                <input type="number" step="any" min="1" max="5" id="H_INDI_STAR_RATING"
+                                    name="H_INDI_STAR_RATING" placeholder="1-5 star rating">
+                                <div class="input-hint">HCAHPS Recommend</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timely & Effective Care Group -->
+                <div class="card measure-section">
+                    <div class="measure-header" onclick="toggleSection('care')">
+                        <div class="measure-header-left">
+                            <div class="measure-icon care">⏱️</div>
+                            <div class="measure-title">
+                                <h3>Timely and Effective Care</h3>
+                                <p>12 measures • Weight: 12%</p>
+                            </div>
+                        </div>
+                        <div class="measure-badge" id="care-count">0/12 entered</div>
+                        <svg class="chevron" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                        </svg>
+                    </div>
+                    <div class="measure-content" id="care-content">
+                        <div class="measure-grid">
+                            <div class="input-group">
+                                <label for="HCP_COVID_19">HCP_COVID_19</label>
+                                <input type="number" step="any" id="HCP_COVID_19" name="HCP_COVID_19"
+                                    placeholder="Enter rate">
+                                <div class="input-hint">COVID-19 Vaccination Coverage</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="IMM_3">IMM_3</label>
+                                <input type="number" step="any" id="IMM_3" name="IMM_3" placeholder="Enter rate">
+                                <div class="input-hint">Influenza Immunization</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="OP_10">OP_10</label>
+                                <input type="number" step="any" id="OP_10" name="OP_10" placeholder="Enter minutes">
+                                <div class="input-hint">Abdomen CT Use of Contrast</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="OP_13">OP_13</label>
+                                <input type="number" step="any" id="OP_13" name="OP_13" placeholder="Enter rate">
+                                <div class="input-hint">Cardiac Imaging for Low-Risk Patients</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="OP_18B">OP_18B</label>
+                                <input type="number" step="any" id="OP_18B" name="OP_18B" placeholder="Enter minutes">
+                                <div class="input-hint">ED Median Time to Transfer</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="OP_22">OP_22</label>
+                                <input type="number" step="any" id="OP_22" name="OP_22" placeholder="Enter ratio">
+                                <div class="input-hint">Left Without Being Seen</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="OP_23">OP_23</label>
+                                <input type="number" step="any" id="OP_23" name="OP_23" placeholder="Enter rate">
+                                <div class="input-hint">ED Head CT Results</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="OP_29">OP_29</label>
+                                <input type="number" step="any" id="OP_29" name="OP_29" placeholder="Enter rate">
+                                <div class="input-hint">Colonoscopy Follow-Up</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="OP_8">OP_8</label>
+                                <input type="number" step="any" id="OP_8" name="OP_8" placeholder="Enter rate">
+                                <div class="input-hint">MRI Lumbar Spine for Low Back Pain</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="PC_01">PC_01</label>
+                                <input type="number" step="any" id="PC_01" name="PC_01" placeholder="Enter rate">
+                                <div class="input-hint">Elective Delivery</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="SAFE_USE_OF_OPIOIDS">SAFE_USE_OF_OPIOIDS</label>
+                                <input type="number" step="any" id="SAFE_USE_OF_OPIOIDS" name="SAFE_USE_OF_OPIOIDS"
+                                    placeholder="Enter rate">
+                                <div class="input-hint">Safe Use of Opioids</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="SEP_1">SEP_1</label>
+                                <input type="number" step="any" id="SEP_1" name="SEP_1" placeholder="Enter rate">
+                                <div class="input-hint">Severe Sepsis Bundle</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="calculate-btn" onclick="calculateRating()">
+                    Calculate Star Rating
+                </button>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="results-panel">
+                <div class="card results-card">
+                    <div class="results-header">
+                        <h3>Your Star Rating</h3>
+                        <p>Based on CMS July 2025 Methodology</p>
+                    </div>
+
+                    <div class="star-display">
+                        <div class="stars-container" id="stars-container">
+                            <span class="star" id="star-1">★</span>
+                            <span class="star" id="star-2">★</span>
+                            <span class="star" id="star-3">★</span>
+                            <span class="star" id="star-4">★</span>
+                            <span class="star" id="star-5">★</span>
+                        </div>
+                        <div class="star-label pending" id="star-label">Enter measures to calculate</div>
+                    </div>
+
+                    <div class="eligibility" id="eligibility-section">
+                        <div class="eligibility-header">
+                            <span class="eligibility-status pending" id="eligibility-status">⏳ Awaiting Input</span>
+                        </div>
+                        <div class="eligibility-details" id="eligibility-details">
+                            Enter at least 3 measures in 3 different groups, including Mortality or Safety.
+                        </div>
+                    </div>
+
+                    <div class="group-scores" id="group-scores-section">
+                        <h4>Group Scores</h4>
+                        <div class="score-item">
+                            <div class="score-label">
+                                <span>Mortality</span>
+                                <span id="mortality-score">--</span>
+                            </div>
+                            <div class="score-bar">
+                                <div class="score-fill" id="mortality-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="score-item">
+                            <div class="score-label">
+                                <span>Safety</span>
+                                <span id="safety-score">--</span>
+                            </div>
+                            <div class="score-bar">
+                                <div class="score-fill" id="safety-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="score-item">
+                            <div class="score-label">
+                                <span>Readmission</span>
+                                <span id="readmission-score">--</span>
+                            </div>
+                            <div class="score-bar">
+                                <div class="score-fill" id="readmission-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="score-item">
+                            <div class="score-label">
+                                <span>Patient Experience</span>
+                                <span id="experience-score">--</span>
+                            </div>
+                            <div class="score-bar">
+                                <div class="score-fill" id="experience-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="score-item">
+                            <div class="score-label">
+                                <span>Timely & Effective Care</span>
+                                <span id="care-score">--</span>
+                            </div>
+                            <div class="score-bar">
+                                <div class="score-fill" id="care-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="summary-score">
+                        <h4>Summary Score</h4>
+                        <div class="summary-value" id="summary-score">--</div>
+                    </div>
+
+                    <div class="footnote">
+                        This calculator replicates the official CMS methodology from the July 2025 SAS program package.
+                        Results are estimates based on standardized measure scores.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hospital Ratings List Section -->
+        <section class="top-hospitals-section">
+            <div class="section-header">
+                <h2>Hospital Ratings List</h2>
+                <p>Browse hospitals by star rating and load their data.</p>
+            </div>
+
+            <div class="card table-card">
+                <div class="table-controls"
+                    style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #e5e7eb;">
+                    <div class="filter-group">
+                        <label for="rating-filter"
+                            style="font-weight: 500; margin-right: 0.5rem; color: #6b7280;">Filter by Rating:</label>
+                        <select id="rating-filter"
+                            style="padding: 0.5rem; border-radius: 0.375rem; border: 1px solid #d1d5db;">
+                            <option value="">All Ratings</option>
+                            <option value="5" selected>5 Stars</option>
+                            <option value="4">4 Stars</option>
+                            <option value="3">3 Stars</option>
+                            <option value="2">2 Stars</option>
+                            <option value="1">1 Star</option>
+                        </select>
+                    </div>
+                    <div class="pagination-info" id="pagination-info" style="color: #6b7280; font-size: 0.875rem;">
+                        Page 1
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="hospitals-table">
+                        <thead>
+                            <tr>
+                                <th>Hospital Name</th>
+                                <th>Rating</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top-hospitals-body">
+                            <!-- Populated by JS -->
+                            <tr>
+                                <td colspan="3" class="loading-row">Loading hospitals...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-controls"
+                    style="display: flex; justify-content: space-between; padding: 1rem; border-top: 1px solid #e5e7eb;">
+                    <button id="prev-btn" class="secondary-btn" disabled
+                        style="padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem; background: white; cursor: pointer;">Previous</button>
+                    <button id="next-btn" class="secondary-btn"
+                        style="padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem; background: white; cursor: pointer;">Next</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
