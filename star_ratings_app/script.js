@@ -319,6 +319,14 @@ async function loadHospitalData(providerId) {
         const data = await response.json();
         populateForm(data);
 
+        // Enable Optimize Button
+        const btnOptimize = document.getElementById('btn-optimize');
+        if (btnOptimize) {
+            btnOptimize.disabled = false;
+            btnOptimize.style.opacity = '1';
+            btnOptimize.style.cursor = 'pointer';
+        }
+
         // Auto-calculate after loading
         calculateRating();
 
@@ -332,7 +340,9 @@ async function loadHospitalData(providerId) {
 function populateForm(data) {
     // Clear all existing inputs first
     document.querySelectorAll('input[type="number"]').forEach(input => {
-        input.value = '';
+        if (input.id !== 'budget-input' && input.id !== 'cost-input') {
+            input.value = '';
+        }
     });
 
     Object.values(MEASURE_GROUPS).flat().forEach(measure => {
@@ -639,3 +649,145 @@ function displayResults(result) {
         summaryScoreEl.textContent = '--';
     }
 }
+
+// ==========================================
+// Optimization Feature
+// ==========================================
+
+let currentRecommendations = [];
+
+async function optimizeRating() {
+    const measures = collectMeasures();
+    const budgetInput = document.getElementById('budget-input');
+    const costInput = document.getElementById('cost-input');
+
+    if (!budgetInput || !budgetInput.value) {
+        alert("Please enter a Budget Limit.");
+        return;
+    }
+    if (!costInput || !costInput.value) {
+        alert("Please enter a Cost per 0.1 SD.");
+        return;
+    }
+
+    const budget = parseFloat(budgetInput.value);
+    const costPerSd = parseFloat(costInput.value);
+
+    if (isNaN(budget) || budget <= 0) {
+        alert("Please enter a valid positive number for the Budget.");
+        return;
+    }
+    if (isNaN(costPerSd) || costPerSd <= 0) {
+        alert("Please enter a valid positive number for the Cost per 0.1 SD.");
+        return;
+    }
+
+    // Show Modal & Loading
+    const modal = document.getElementById('optimization-modal');
+    const loading = document.getElementById('optimization-loading');
+    const results = document.getElementById('optimization-results');
+
+    if (modal) {
+        modal.style.display = 'flex';
+        if (loading) loading.style.display = 'block';
+        if (results) results.style.display = 'none';
+    }
+
+    try {
+        const response = await fetch('/api/optimize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...measures, budget: budget, cost_per_sd: costPerSd })
+        });
+
+        if (!response.ok) throw new Error("Optimization failed");
+
+        const data = await response.json();
+
+        // Hide loading, show results
+        if (loading) loading.style.display = 'none';
+        if (results) results.style.display = 'block';
+
+        // Populate UI
+        const elCurrentStars = document.getElementById('opt-current-stars');
+        if (elCurrentStars) elCurrentStars.textContent = (data.original_rating || '--') + ' Stars';
+
+        const elCurrentScore = document.getElementById('opt-current-score');
+        if (elCurrentScore) elCurrentScore.textContent = 'Score: ' + (data.original_summary_score ? data.original_summary_score.toFixed(3) : '--');
+
+        const elProjStars = document.getElementById('opt-projected-stars');
+        if (elProjStars) elProjStars.textContent = (data.optimized_rating || '--') + ' Stars';
+
+        const elProjScore = document.getElementById('opt-projected-score');
+        if (elProjScore) elProjScore.textContent = 'Score: ' + (data.optimized_summary_score ? data.optimized_summary_score.toFixed(3) : '--');
+
+        const elTotalCost = document.getElementById('opt-total-cost');
+        if (elTotalCost) elTotalCost.textContent = '$' + data.total_cost.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+        const tbody = document.getElementById('recommendations-body');
+        if (tbody) {
+            tbody.innerHTML = '';
+
+            currentRecommendations = data.recommendations; // Store for apply
+
+            if (!data.recommendations || data.recommendations.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 1rem; color: #9ca3af;">No changes recommended within budget.</td></tr>';
+            } else {
+                data.recommendations.forEach(rec => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="color: #fff;">
+                            <div style="font-weight: 500;">${rec.measure}</div>
+                            <div style="font-size: 0.75rem; color: #6b7280;">Current: ${rec.current_value.toFixed(2)} → Target: ${rec.target_value.toFixed(2)}</div>
+                        </td>
+                        <td style="color: #cbd5e1;">${rec.description}</td>
+                        <td style="text-align: right; color: #ef4444; font-weight: 500;">$${rec.cost.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+
+    } catch (e) {
+        console.error(e);
+        alert("Optimization failed: " + e.message);
+        closeModal();
+    }
+}
+
+function closeModal() {
+    const modal = document.getElementById('optimization-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+function applyOptimization() {
+    if (!currentRecommendations || currentRecommendations.length === 0) {
+        closeModal();
+        return;
+    }
+
+    let updateCount = 0;
+    currentRecommendations.forEach(rec => {
+        const input = document.getElementById(rec.measure);
+        if (input) {
+            input.value = rec.target_value; // Updates value
+            updateCount++;
+        }
+    });
+
+    // Update counts manually since programmatic change doesn't always trigger 'input' event
+    updateMeasureCounts();
+
+    alert(`Updated ${updateCount} measures with optimized values.`);
+    closeModal();
+    calculateRating(); // Re-run main calculation
+}
+
+// Close modal if clicking outside
+window.onclick = function (event) {
+    const modal = document.getElementById('optimization-modal');
+    if (event.target == modal) {
+        closeModal();
+    }
+}
+

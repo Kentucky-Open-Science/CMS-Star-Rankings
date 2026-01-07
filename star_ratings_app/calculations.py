@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from sklearn.cluster import KMeans
 import csv
 import io
+import optuna
 
 
 # =============================================================================
@@ -427,6 +428,201 @@ def calculate_kmeans_star_ratings(hospitals_data: List[Dict[str, Optional[float]
     return star_ratings
 
 
+
+class StarRatingOptimizer:
+    """
+    Optimizer for CMS Star Ratings using Optuna.
+    
+    Strategies:
+    1. Primary: Find MINIMUM COST to reach (Current Rating + 1).
+    2. Fallback: If (1) is impossible or over budget, MAXIMIZE Summary Score within budget.
+    
+    Cost Model: $5,000 per 0.1 SD improvement per measure.
+    """
+    def __init__(self, calculator: StarRatingCalculator):
+        self.calculator = calculator
+        self.COST_PER_01_SD = 5000.0 # Reduced from 50k
+
+    def optimize(self, current_measures: Dict[str, Optional[float]], budget: float, cost_per_sd: float = 5000.0) -> Dict:
+        # Pre-filter valid measures
+        valid_measures = [m for m, v in current_measures.items() if v is not None]
+        
+        # Helper to calculate cost with dynamic rate
+        def calculate_cost(improvement_sd):
+            return improvement_sd * 10 * cost_per_sd
+
+        # 1. Baseline Calculation
+        start_result = self.calculator.calculate(current_measures)
+        current_rating = start_result.star_rating or 3 # Fallback if None
+        current_summary = start_result.summary_score or 0.0
+        
+        # Target: Try to reach next star level
+        target_rating = min(current_rating + 1, 5)
+        
+        optuna.logging.set_verbosity(optuna.logging.ERROR)
+        
+        # ==========================================================
+        # STRATEGY 1: Minimize Cost to reach Target Rating
+        # ==========================================================
+        best_plan = None
+        
+        if target_rating > current_rating:
+            study_min_cost = optuna.create_study(direction='minimize')
+            
+            def objective_min_cost(trial):
+                simulated_measures = current_measures.copy()
+                total_cost = 0.0
+                
+                for m in valid_measures:
+                    # Suggest improvement 0.0 to 2.0 SD
+                    imp_sd = trial.suggest_float(f'imp_{m}', 0.0, 2.0)
+                    total_cost += calculate_cost(imp_sd)
+                    
+                    # Apply change (create helper locally or inline)
+                    if imp_sd > 0:
+                        stats = self.calculator.national_stats.get(m, {'mean': 0, 'std': 1})
+                        if stats['std'] != 0:
+                            if m in MEASURES_TO_FLIP:
+                                simulated_measures[m] = current_measures[m] - (imp_sd * stats['std'])
+                            else:
+                                simulated_measures[m] = current_measures[m] + (imp_sd * stats['std'])
+                
+                # Check constraints
+                res = self.calculator.calculate(simulated_measures)
+                sim_rating = res.star_rating or 1
+                
+                # Penalty if we don't hit target rating
+                if sim_rating < target_rating:
+                    return 1e9 + (target_rating - sim_rating) # Big penalty
+                    
+                return total_cost
+
+            study_min_cost.optimize(objective_min_cost, n_trials=50, timeout=15.0)
+            
+            # Check if we found a valid solution
+            if study_min_cost.best_value < 1e9:
+                if study_min_cost.best_value <= budget:
+                    # Strategy 1 Success! We found a plan to reach target under budget.
+                    best_plan = study_min_cost.best_trial
+        
+        # ==========================================================
+        # STRATEGY 2: Maximize Score (Fallback)
+        # ==========================================================
+        # Run this if:
+        # a) We are already 5 stars
+        # b) Strategy 1 failed to reach target
+        # c) Strategy 1 solutions were all over budget
+        
+        if best_plan is None:
+            study_max_score = optuna.create_study(direction='maximize')
+            
+            def objective_max_score(trial):
+                simulated_measures = current_measures.copy()
+                total_cost = 0.0
+                
+                for m in valid_measures:
+                    imp_sd = trial.suggest_float(f'imp_{m}', 0.0, 2.0)
+                    total_cost += calculate_cost(imp_sd)
+                    
+                    if imp_sd > 0:
+                        stats = self.calculator.national_stats.get(m, {'mean': 0, 'std': 1})
+                        if stats['std'] != 0:
+                            if m in MEASURES_TO_FLIP:
+                                simulated_measures[m] = current_measures[m] - (imp_sd * stats['std'])
+                            else:
+                                simulated_measures[m] = current_measures[m] + (imp_sd * stats['std'])
+                
+                # Strict Budget Constraint
+                if total_cost > budget:
+                    # Soft penalty for slight overage to guide optimizer, tough penalty for large
+                    return -1000.0
+                
+                res = self.calculator.calculate(simulated_measures)
+                return res.summary_score or -100.0
+
+            study_max_score.optimize(objective_max_score, n_trials=50, timeout=15.0)
+            
+            # Use this plan even if it doesn't increase star rating (it's the best we can do under budget)
+            best_plan = study_max_score.best_trial
+
+        # ==========================================================
+        # CONSTRUCT RESULT
+        # ==========================================================
+        best_measures = current_measures.copy()
+        recommendations = []
+        total_cost = 0.0
+        
+        # Safe unpacking
+        if best_plan:
+            for m in valid_measures:
+                imp_key = f'imp_{m}'
+                if imp_key in best_plan.params:
+                    imp_sd = best_plan.params[imp_key]
+                    if imp_sd > 0.001:
+                        cost = calculate_cost(imp_sd)
+                        
+                        # Re-verify budget (optimizer might be slightly fuzzy, clamp it?)
+                        # But we trust the optimizer found a valid point mostly.
+                        
+                        stats = self.calculator.national_stats.get(m, {'mean': 0, 'std': 1})
+                        std = stats['std']
+                        
+                        if m in MEASURES_TO_FLIP:
+                            target_val = current_measures[m] - (imp_sd * std)
+                            direction = "Decrease"
+                        else:
+                            target_val = current_measures[m] + (imp_sd * std)
+                            direction = "Increase"
+                            
+                        # Only add if it doesn't break budget cumulatively? 
+                        # Ideally the optimization step handled this. 
+                        # Let's add it and check summation.
+                        
+                        best_measures[m] = target_val
+                        total_cost += cost
+                        
+                        recommendations.append({
+                            'measure': m,
+                            'current_value': current_measures[m],
+                            'target_value': target_val,
+                            'improvement_sd': imp_sd,
+                            'cost': cost,
+                            'description': f"{direction} {m} by {abs(target_val - current_measures[m]):.2f} ({imp_sd:.2f} SD)"
+                        })
+
+        # ==========================================================
+        # SAFETY CHECK: STRICT BUDGET ENFORCEMENT
+        # ==========================================================
+        # If total_cost is slightly over budget due to floating point or fallback leniency,
+        # we iterate and remove the least impacting items (or just smallest improvements)
+        
+        if total_cost > budget:
+            # Sort by improvement SD (assuming optimization wanted biggest bangs first, or just trim smallest)
+            recommendations.sort(key=lambda x: x['improvement_sd']) # ascending
+            
+            while total_cost > budget and recommendations:
+                # Remove smallest improvement
+                removed = recommendations.pop(0)
+                total_cost -= removed['cost']
+                # Reset measure value
+                best_measures[removed['measure']] = removed['current_value']
+            
+            # Re-sort for display
+            recommendations.sort(key=lambda x: x['improvement_sd'], reverse=True)
+
+        final_result = self.calculator.calculate(best_measures)
+        
+        return {
+            'original_rating': start_result.star_rating,
+            'original_summary_score': start_result.summary_score,
+            'optimized_rating': final_result.star_rating,
+            'optimized_summary_score': final_result.summary_score,
+            'total_cost': total_cost,
+            'budget': budget,
+            'recommendations': recommendations
+        }
+
+
 # =============================================================================
 # Flask Web Application
 # =============================================================================
@@ -438,6 +634,7 @@ app = Flask(__name__, static_folder='.')
 
 # Initialize calculator
 calculator = StarRatingCalculator()
+optimizer = StarRatingOptimizer(calculator)
 
 # Load hospital data
 HOSPITALS_DATA = {}
@@ -563,6 +760,35 @@ def calculate_rating():
         return jsonify(response)
     
     except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+
+@app.route('/api/optimize', methods=['POST'])
+def optimize_rating():
+    """API endpoint to optimize rating given a budget"""
+    try:
+        data = request.json
+        budget = float(data.get('budget', 1000000.0))
+        cost_per_sd = float(data.get('cost_per_sd', 5000.0))
+        measures = {}
+        
+        # Parse measure values
+        for group, measure_list in MEASURE_GROUPS.items():
+            for measure in measure_list:
+                value = data.get(measure)
+                if value is not None and value != '':
+                    try:
+                        measures[measure] = float(value)
+                    except (ValueError, TypeError):
+                        measures[measure] = None
+                else:
+                    measures[measure] = None
+        
+        result = optimizer.optimize(measures, budget, cost_per_sd)
+        return jsonify(result)
+
+    except Exception as e:
+        print(f"Optimization error: {e}")
         return jsonify({'error': str(e)}), 400
 
 
