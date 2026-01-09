@@ -1,6 +1,6 @@
 # CMS Star Rankings
 
-A web-based tool for calculating and exploring CMS Hospital Star Ratings, replicating the official SAS methodology (July 2025).
+A web-based tool for calculating and exploring CMS Hospital Star Ratings, replicating the official SAS methodology (July 2025). Data here: https://qualitynet.cms.gov/inpatient/public-reporting/overall-ratings/sas
 
 ## Overview
 

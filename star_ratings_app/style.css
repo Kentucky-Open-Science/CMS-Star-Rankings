@@ -218,12 +218,13 @@ body {
   backdrop-filter: blur(20px);
   border: 1px solid var(--card-border);
   border-radius: 16px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* Measure Groups */
 .measure-section {
   margin-bottom: 1rem;
+  overflow: visible;
 }
 
 .measure-header {
@@ -313,6 +314,7 @@ body {
 
 .measure-content.expanded {
   max-height: 2000px;
+  overflow: visible;
 }
 
 .measure-grid {
@@ -325,6 +327,7 @@ body {
 /* Input Fields */
 .input-group {
   position: relative;
+  overflow: visible;
 }
 
 .input-group label {
@@ -371,7 +374,7 @@ body {
   padding: 1.25rem;
   font-size: 1rem;
   font-weight: 700;
-  color: var(--primary-blue);
+  color: var(--text-primary);
   cursor: pointer;
   transition: all 0.3s ease;
   text-transform: uppercase;
@@ -536,7 +539,29 @@ body {
 }
 
 .score-fill.negative {
-  background: linear-gradient(90deg, var(--error-red), var(--warning-orange));
+  background: linear-gradient(90deg, #f87171, #ef4444);
+  /* Red override for negative */
+}
+
+/* Group Score Colors */
+.score-fill.mortality {
+  background: linear-gradient(90deg, #f87171, #dc2626);
+}
+
+.score-fill.safety {
+  background: linear-gradient(90deg, #60a5fa, #2563eb);
+}
+
+.score-fill.readmission {
+  background: linear-gradient(90deg, #a78bfa, #7c3aed);
+}
+
+.score-fill.experience {
+  background: linear-gradient(90deg, #34d399, #059669);
+}
+
+.score-fill.care {
+  background: linear-gradient(90deg, #fbbf24, #d97706);
 }
 
 /* Summary Score */
@@ -663,6 +688,13 @@ body {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   color: var(--text-primary);
+  vertical-align: middle;
+  /* Ensure vertical centering */
+}
+
+/* Fix for checkbox column */
+.hospitals-table td:first-child input[type="checkbox"] {
+  margin-left: 0.5rem;
 }
 
 .hospitals-table tr:last-child td {
@@ -699,4 +731,125 @@ body {
   background: var(--accent-gold);
   color: var(--primary-blue);
   border-color: var(--accent-gold);
+}
+
+.disabled-state {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Optimization tables checkbox styling */
+#opt-actionable-tbody td:first-child,
+#opt-other-tbody td:first-child {
+  padding-left: 1rem;
+}
+
+#opt-actionable-tbody td:first-child input[type="checkbox"],
+#opt-other-tbody td:first-child input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+}
+
+/* ============================================
+   Metric Tooltips
+   ============================================ */
+
+/* Tooltip container on labels */
+.tooltip-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* Tooltip icon */
+.tooltip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  background: rgba(212, 175, 55, 0.2);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 50%;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  cursor: help;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.tooltip-icon:hover {
+  background: rgba(212, 175, 55, 0.4);
+  transform: scale(1.1);
+}
+
+/* Tooltip text - absolute positioning within container */
+.tooltip-text {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  z-index: 99999;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 250px;
+  max-width: 350px;
+  padding: 0.75rem 1rem;
+  background: rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #e2e8f0;
+  line-height: 1.5;
+  text-align: left;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  pointer-events: none;
+}
+
+/* Tooltip arrow */
+.tooltip-text::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: rgba(212, 175, 55, 0.6) transparent transparent transparent;
+}
+
+/* Show tooltip on hover */
+.tooltip-container:hover .tooltip-text,
+.tooltip-icon:hover+.tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Measure ID badge in tooltip */
+.tooltip-measure-id {
+  display: inline-block;
+  background: rgba(212, 175, 55, 0.2);
+  color: var(--accent-gold);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+/* For optimization table labels */
+.opt-measure-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.opt-measure-label .tooltip-icon {
+  width: 16px;
+  height: 16px;
+  font-size: 0.65rem;
 }

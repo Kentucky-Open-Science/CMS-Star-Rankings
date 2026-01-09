@@ -36,9 +36,9 @@
 
     <main class="container">
         <section class="intro">
-            <h2>Calculate Your Hospital's Star Rating</h2>
-            <p>Enter your hospital's quality measure scores below. The calculator uses the official CMS methodology to
-                determine your star rating based on 46 quality measures across 5 domains.</p>
+            <h2 id="hospital-name-heading">Calculate Your Hospital's Star Rating</h2>
+            <p>Modify the values below to explore your hospital's star ranking, or use the search bar above to load a
+                different medical center.</p>
         </section>
 
         <div class="main-grid">
@@ -414,31 +414,129 @@
                     Calculate Star Rating
                 </button>
 
-                <!-- Optimization Controls -->
-                <div class="optimize-controls"
-                    style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                    <h3 style="margin-bottom: 1rem; color: #fff; font-size: 1.1rem;">Optimization</h3>
-                    <div class="input-group">
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <div style="flex: 1; min-width: 200px;">
-                                <label for="budget-input"
-                                    style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.25rem; display: block;">Budget
-                                    Limit ($)</label>
-                                <input type="number" id="budget-input" value="1000000" step="100000"
-                                    style="width: 100%;">
+                <!-- Optimization Configuration -->
+                <div class="card measure-section" style="margin-top: 2rem; border-top: 4px solid var(--accent-gold);">
+                    <div class="measure-header" onclick="toggleSection('optimization-config')">
+                        <div class="measure-header-left">
+                            <div class="measure-icon" style="background: linear-gradient(135deg, #7c3aed, #5b21b6);">🚀
                             </div>
-                            <div style="flex: 1; min-width: 200px;">
-                                <label for="cost-input"
-                                    style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.25rem; display: block;">Cost
-                                    per 0.1 SD ($)</label>
-                                <input type="number" id="cost-input" value="5000" step="1000" style="width: 100%;">
+                            <div class="measure-title">
+                                <h3>Optimization Configuration</h3>
+                                <p>Target rating, budget, and measure costs</p>
                             </div>
                         </div>
-                        <button type="button" id="btn-optimize" class="calculate-btn optimize-btn"
-                            onclick="optimizeRating()" disabled
-                            style="background: linear-gradient(135deg, #7c3aed, #5b21b6); margin-top: 1rem; width: 100%; opacity: 0.5; cursor: not-allowed; color:white">
-                            Optimize
-                        </button>
+                        <svg class="chevron" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                        </svg>
+                    </div>
+
+                    <div class="measure-content expanded" id="optimization-config-content">
+                        <div style="padding: 1.5rem;">
+
+                            <!-- Goal & Budget -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                                <div>
+                                    <label
+                                        style="display: block; color: var(--text-secondary); font-size: 0.75rem; font-weight: 500; margin-bottom: 0.5rem;">OPTIMIZATION
+                                        GOAL</label>
+
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                        <label
+                                            style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-primary);">
+                                            <input type="radio" name="target_mode" value="next_star" checked
+                                                onchange="toggleTargetScoreInput()">
+                                            Reach Next Star Rating
+                                        </label>
+                                        <label
+                                            style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-primary);">
+                                            <input type="radio" name="target_mode" value="specific_score"
+                                                onchange="toggleTargetScoreInput()">
+                                            Target Specific Score
+                                        </label>
+                                    </div>
+
+                                    <div id="target-score-container"
+                                        style="margin-top: 0.5rem; display: none; padding-left: 1.5rem;">
+                                        <input type="number" step="0.01" id="target_score"
+                                            placeholder="Enter target (e.g. -0.25)"
+                                            style="background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: white; padding: 0.5rem; border-radius: 6px; width: 100%;">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="budget-input"
+                                        style="display: block; color: var(--text-secondary); font-size: 0.75rem; font-weight: 500; margin-bottom: 0.5rem;">TOTAL
+                                        BUDGET ($)</label>
+                                    <input type="number" id="budget-input" value="1000000" step="100000"
+                                        style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: white; padding: 0.75rem; border-radius: 8px; font-size: 1rem;">
+                                </div>
+                            </div>
+
+                            <!-- Actionable Measures -->
+                            <div style="margin-bottom: 2rem;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.5rem;">
+                                    <label
+                                        style="color: var(--text-secondary); font-size: 0.75rem; font-weight: 500;">ACTIONABLE
+                                        MEASURES</label>
+                                    <button class="load-btn-sm" onclick="toggleAll('actionable', true)"
+                                        style="font-size: 0.7rem;">Select All</button>
+                                </div>
+                                <div
+                                    style="background: rgba(0,0,0,0.2); border: 1px solid var(--card-border); border-radius: 8px; overflow: visible;">
+                                    <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
+                                        <thead
+                                            style="background: rgba(255,255,255,0.05); color: var(--text-secondary);">
+                                            <tr>
+                                                <th style="padding: 0.75rem; text-align: left; width: 40px;"></th>
+                                                <th style="padding: 0.75rem; text-align: left;">Measure</th>
+                                                <th style="padding: 0.75rem; text-align: right; width: 150px;">Cost per
+                                                    0.1 SD ($)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="opt-actionable-tbody">
+                                            <!-- Steps will be populated by JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Other Measures -->
+                            <div>
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.5rem;">
+                                    <label
+                                        style="color: var(--text-secondary); font-size: 0.75rem; font-weight: 500;">OTHER
+                                        MEASURES</label>
+                                    <button class="load-btn-sm" onclick="toggleTable('opt-other-tbody')"
+                                        id="btn-toggle-other">Show/Hide</button>
+                                </div>
+                                <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--card-border); border-radius: 8px; overflow: visible; display: none;"
+                                    id="opt-other-container">
+                                    <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
+                                        <thead
+                                            style="background: rgba(255,255,255,0.05); color: var(--text-secondary);">
+                                            <tr>
+                                                <th style="padding: 0.75rem; text-align: left; width: 40px;"></th>
+                                                <th style="padding: 0.75rem; text-align: left;">Measure</th>
+                                                <th style="padding: 0.75rem; text-align: right; width: 150px;">Cost per
+                                                    0.1 SD ($)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="opt-other-tbody">
+                                            <!-- Steps will be populated by JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <button type="button" id="btn-optimize" class="calculate-btn" onclick="optimizeRating()"
+                                disabled
+                                style="background: linear-gradient(135deg, #7c3aed, #5b21b6); margin-top: 2rem; opacity: 0.5; cursor: not-allowed;">
+                                Run Optimization
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -464,7 +562,8 @@
 
                     <div class="eligibility" id="eligibility-section">
                         <div class="eligibility-header">
-                            <span class="eligibility-status pending" id="eligibility-status">⏳ Awaiting Input</span>
+                            <span class="eligibility-status pending" id="eligibility-status">⏳ Awaiting
+                                Input</span>
                         </div>
                         <div class="eligibility-details" id="eligibility-details">
                             Enter at least 3 measures in 3 different groups, including Mortality or Safety.
@@ -526,7 +625,8 @@
                     </div>
 
                     <div class="footnote">
-                        This calculator replicates the official CMS methodology from the July 2025 SAS program package.
+                        This calculator replicates the official CMS methodology from the July 2025 SAS program
+                        package.
                         Results are estimates based on standardized measure scores.
                     </div>
                 </div>
@@ -545,7 +645,8 @@
                     style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #e5e7eb;">
                     <div class="filter-group">
                         <label for="rating-filter"
-                            style="font-weight: 500; margin-right: 0.5rem; color: #6b7280;">Filter by Rating:</label>
+                            style="font-weight: 500; margin-right: 0.5rem; color: #6b7280;">Filter by
+                            Rating:</label>
                         <select id="rating-filter"
                             style="padding: 0.5rem; border-radius: 0.375rem; border: 1px solid #d1d5db;">
                             <option value="">All Ratings</option>
