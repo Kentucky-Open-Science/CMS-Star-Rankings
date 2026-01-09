@@ -858,7 +858,8 @@ def calculate_rating():
         return jsonify(response)
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        print(f"Calculate rating error: {e}")
+        return jsonify({'error': 'An error occurred while calculating the rating. Please check your input values.'}), 400
 
 
 @app.route('/api/optimize', methods=['POST'])
@@ -919,7 +920,7 @@ def optimize_rating():
 
     except Exception as e:
         print(f"Optimization error: {e}")
-        return jsonify({'error': str(e)}), 400
+        return jsonify({'error': 'An error occurred during optimization. Please check your input values.'}), 400
 
 
 @app.route('/api/measures', methods=['GET'])
@@ -1008,7 +1009,8 @@ def get_hospital_list():
         })
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        print(f"Hospital list error: {e}")
+        return jsonify({'error': 'An error occurred while fetching the hospital list.'}), 400
 
 
 @app.route('/api/hospitals/<provider_id>', methods=['GET'])
@@ -1024,4 +1026,36 @@ def get_hospital_data(provider_id):
 if __name__ == '__main__':
     print("Starting CMS Star Rankings Calculator...")
     print("Open http://localhost:5555 in your browser")
-    app.run(debug=True, port=5555)
+    
+    # Debug mode controlled via environment variable for security
+    # Set FLASK_DEBUG=1 for development, leave unset for production
+    debug_mode = os.environ.get('FLASK_DEBUG', '0') == '1'
+    
+    if debug_mode:
+        # Use Flask development server only in debug mode
+        print("Running in DEBUG mode with Flask development server")
+        app.run(debug=True, port=5555)
+    else:
+        # Use production WSGI server
+        try:
+            # Try Waitress first (works on both Windows and Linux)
+            from waitress import serve
+            print("Running with Waitress production server")
+            serve(app, host='0.0.0.0', port=5555)
+        except ImportError:
+            try:
+                # Fallback to Gunicorn (Linux only)
+                import subprocess
+                import sys
+                print("Running with Gunicorn production server")
+                subprocess.run([
+                    sys.executable, '-m', 'gunicorn',
+                    '-b', '0.0.0.0:5555',
+                    '-w', '4',
+                    'calculations:app'
+                ])
+            except Exception:
+                # Final fallback - Flask dev server with warning
+                print("WARNING: No production server available. Install waitress: pip install waitress")
+                app.run(debug=False, port=5555, host='0.0.0.0')
+
