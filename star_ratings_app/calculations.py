@@ -17,7 +17,7 @@ from sklearn.cluster import KMeans
 import csv
 import io
 import optuna
-
+import copy
 
 # =============================================================================
 # MEASURE DEFINITIONS (from SAS code lines 37-41 in file 0)
@@ -113,7 +113,6 @@ class StarRatingResult:
     peer_group: Optional[int]  # 3, 4, or 5 groups
     weights_used: Dict[str, Optional[float]]
 
-
 class StarRatingCalculator:
     """
     CMS Hospital Star Rating Calculator
@@ -152,6 +151,9 @@ class StarRatingCalculator:
             4: [-0.84, -0.25, 0.25, 0.84],
             5: [-0.84, -0.25, 0.25, 0.84]
         }
+
+    def get_national_stats(self):
+        return self.national_stats
 
     def _initialize_from_csv(self):
         """Load data, calc stats, and run K-means for cutoffs."""
@@ -287,9 +289,9 @@ class StarRatingCalculator:
                 
                 if m in MEASURES_TO_FLIP: val = -val
                 values.append(val)
-        
         count = len(values)
         if count == 0: return None, 0
+
         return sum(values)/count, count
 
     # ... Standard methods ...
@@ -371,7 +373,6 @@ class StarRatingCalculator:
             score, count = self.calculate_group_score(measures, group_name)
             group_scores[group_name] = score
             group_counts[group_name] = count
-            
         eligible, eligibility_reason = self.check_eligibility(group_counts)
         
         if not eligible:
@@ -862,6 +863,109 @@ def calculate_rating():
         return jsonify({'error': 'An error occurred while calculating the rating. Please check your input values.'}), 400
 
 
+def new_optimize(measures, national_stats, calculator, cost_per_std, budget, target_mode, target_score):
+    current_result = calculator.calculate(measures)
+    if not current_result.eligible or (current_result.star_rating >= 5 and target_mode == 'next_star'):
+        return {'error': "Hospital already at 5 stars or ineligible."}
+
+    target_star = current_result.star_rating + 1
+    current_summary_score = current_result.summary_score
+    weights = current_result.weights_used
+    if (target_mode != 'next_star' and target_score <= current_summary_score):
+        return {'error': "Hospital has already achieved target score."}
+
+    leverage_map = {}
+    for group, group_measures in MEASURE_GROUPS.items():
+        weight = weights.get(group, 0)
+        if weight and weight > 0:
+            active_measures_in_group = [m for m in group_measures if measures.get(m) is not None]
+            if active_measures_in_group:
+                individual_leverage = weight / len(active_measures_in_group)
+                for m in active_measures_in_group:
+                    leverage_map[m] = individual_leverage
+
+    working_measures = copy.deepcopy(measures)
+    total_cost = 0
+    step_size_std = 0.01
+    i = 0
+    changes_made = {m: 0.0 for m in measures.keys()}
+    costs = {m: 0.0 for m in measures.keys()}
+    sds = {m: 0.0 for m in measures.keys()}
+
+    while True:
+        i += 1
+        best_measure = None
+        min_step_cost = float('inf')
+        for m, leverage in leverage_map.items():
+            if m in cost_per_std.keys(): #Only use measures that we have included costs for
+                stats = national_stats[m]
+                z_score = (working_measures[m] - stats['mean']) / stats['std']
+                if m in MEASURES_TO_FLIP:
+                    z_score = -z_score
+                difficulty_penalty = 1 + (max(0, z_score) ** 2) #Add a penalty to prevent improving the same measure repeatedly
+
+                if m in ACTIONABLE_MEASURES:
+                    multiplier = 0.5
+                else:
+                    multiplier = 1
+                step_cost = step_size_std * cost_per_std[m] * multiplier * difficulty_penalty
+                if step_cost / leverage < min_step_cost:
+                    min_step_cost = step_cost / leverage
+                    best_measure = m
+        if not best_measure:
+            break
+
+        direction = -1 if best_measure in MEASURES_TO_FLIP else 1
+        std_move = step_size_std * direction
+        raw_move = std_move * national_stats[best_measure]['std']
+
+        working_measures[best_measure] += raw_move
+        total_cost += (step_size_std * cost_per_std[best_measure])
+        changes_made[best_measure] += raw_move
+        costs[best_measure] += (step_size_std * cost_per_std[best_measure])
+        sds[best_measure] += step_size_std
+
+        new_result = calculator.calculate(working_measures)
+        if target_mode == 'next_star':
+            if new_result.star_rating >= target_star:
+                success = True
+            else:
+                success = False
+        else:
+            if new_result.summary_score >= target_score:
+                success = True
+            else:
+                success = False
+        if success:
+            changes_made = {k: (round(v, 4) if isinstance(v, float) else v) for k, v in changes_made.items()}
+            # print(f'Total cost: ${total_cost}')
+            # print(f'Star Rating: {new_result.star_rating}')
+            # print(f'Summary Score: {new_result.summary_score}')
+            # print(f'Total iterations: {i}')
+            # print('====== CHANGES MADE ======')
+            # for m, v in changes_made.items():
+            #     if v != 0:
+            #         print(f'{m}: Adjusted by {float(v)}')
+            result_dict = {'original_rating': current_result.star_rating, 'original_summary_score': np.float64(current_summary_score),
+                           'optimized_rating': new_result.star_rating, 'optimized_summary_score': np.float64(new_result.summary_score),
+                           'total_cost': total_cost, 'budget': budget, 'target_mode': target_mode, 'target_threshold': target_score}
+            recommendations = []
+            for m, v in changes_made.items():
+                if v != 0:
+                    if v < 0:
+                        desc = 'Decrease '
+                    else:
+                        desc = 'Increase '
+                    desc += f'{m} by {round(abs(v), 2)} ({round(sds[m], 2)} SD)'
+                    rec = {'measure': m, 'current_value': measures[m], 'target_value': np.float64(measures[m] + float(v)),
+                           'improvement_sd': sds[m], 'cost': costs[m], 'description': desc}
+                    recommendations.append(rec)
+            result_dict['recommendations'] = recommendations
+            return result_dict
+
+        if total_cost > budget:
+            return {'error': "Target rating unreachable within budget."}
+
 @app.route('/api/optimize', methods=['POST'])
 def optimize_rating():
     """API endpoint to optimize rating given a budget and settings"""
@@ -883,7 +987,7 @@ def optimize_rating():
              
         # measure_costs is a dict {measure_name: cost_per_0.1_sd}
         # It dictates WHICH measures we optimize and their costs.
-        measure_costs = data.get('measure_costs', {}) 
+        measure_costs = data.get('measure_costs', {})
          
         # We also need CURRENT measure values to base off
         # The frontend should send them, OR we assume they are in 'measures'?
@@ -914,8 +1018,10 @@ def optimize_rating():
                  clean_costs[k] = float(v)
             except:
                  clean_costs[k] = 5000.0
-        
-        result = optimizer.optimize(measures, budget, clean_costs, target_mode, target_score)
+
+        result = new_optimize(measures, calculator.get_national_stats(), calculator, clean_costs, budget, target_mode, target_score)
+        # result = optimizer.optimize(measures, budget, clean_costs, target_mode, target_score)
+        print(result)
         return jsonify(result)
 
     except Exception as e:
