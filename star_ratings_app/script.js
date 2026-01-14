@@ -268,11 +268,14 @@ function updateMeasureCounts() {
     });
 }
 
-// Add input listeners for real-time count updates
+// Add input listeners for real-time count and optimization availability updates
 document.addEventListener('DOMContentLoaded', async () => {
     const inputs = document.querySelectorAll('input[type="number"]');
     inputs.forEach(input => {
-        input.addEventListener('input', updateMeasureCounts);
+        input.addEventListener('input', () => {
+            updateMeasureCounts();
+            updateOptimizationAvailability();
+        });
     });
 
     // Apply tooltips to static measure labels
@@ -294,6 +297,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load optimization config (measures)
     loadOptimizationConfig();
 });
+
 
 // Apply tooltips to static measure labels in the form
 function applyMeasureTooltips() {
@@ -403,9 +407,49 @@ async function loadOptimizationConfig() {
             }
         });
 
+        // Initialize availability state
+        updateOptimizationAvailability();
+
     } catch (e) {
         console.error("Error loading optimization config:", e);
     }
+}
+
+// Enable/Disable optimization checkboxes based on input values
+function updateOptimizationAvailability() {
+    const checkboxes = document.querySelectorAll('input[name="opt-measure"]');
+
+    checkboxes.forEach(cb => {
+        const measure = cb.value;
+        const input = document.getElementById(measure);
+        const row = cb.closest('tr');
+
+        if (input && input.value !== '' && input.value !== null) {
+            // Value exists - Enable
+            cb.disabled = false;
+            if (row) {
+                row.style.opacity = '1';
+                row.style.filter = 'none';
+
+                // Restore label color if we messed with it
+                const label = row.querySelector('label');
+                if (label) label.style.color = '#cbd5e1';
+            }
+        } else {
+            // No value - Disable
+            cb.disabled = true;
+            cb.checked = false; // Uncheck if it was checked
+
+            if (row) {
+                row.style.opacity = '0.5';
+                row.style.filter = 'grayscale(100%)';
+
+                // Make label look disabled
+                const label = row.querySelector('label');
+                if (label) label.style.color = '#64748b';
+            }
+        }
+    });
 }
 
 function toggleTargetScoreInput() {
@@ -724,6 +768,7 @@ function populateForm(data) {
     });
 
     updateMeasureCounts();
+    updateOptimizationAvailability();
 }
 
 // Collect all measure values from form
@@ -1176,6 +1221,7 @@ function applyOptimization() {
 
     // Update counts manually since programmatic change doesn't always trigger 'input' event
     updateMeasureCounts();
+    updateOptimizationAvailability();
 
     alert(`Updated ${updateCount} measures with optimized values.`);
     closeModal();
