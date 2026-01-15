@@ -1147,7 +1147,7 @@ if __name__ == '__main__':
             # Try Waitress first (works on both Windows and Linux)
             from waitress import serve
             print("Running with Waitress production server")
-            serve(app, host='0.0.0.0', port=5555)
+            serve(app, host='127.0.0.1', port=5555)
         except ImportError:
             try:
                 # Fallback to Gunicorn (Linux only)
@@ -1156,12 +1156,12 @@ if __name__ == '__main__':
                 print("Running with Gunicorn production server")
                 subprocess.run([
                     sys.executable, '-m', 'gunicorn',
-                    '-b', '0.0.0.0:5555',
+                    '-b', '127.0.0.1:5555',
                     '-w', '4',
                     'calculations:app'
                 ])
             except Exception:
                 # Final fallback - Flask dev server with warning
                 print("WARNING: No production server available. Install waitress: pip install waitress")
-                app.run(debug=False, port=5555, host='0.0.0.0')
+                app.run(debug=False, port=5555, host='127.0.0.1')
 
