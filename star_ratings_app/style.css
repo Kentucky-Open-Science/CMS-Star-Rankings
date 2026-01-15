@@ -853,3 +853,449 @@ body {
   height: 16px;
   font-size: 0.65rem;
 }
+
+/* ============================================
+   Optimization Section Disabled State
+   ============================================ */
+
+.optimization-section-wrapper {
+  position: relative;
+}
+
+.optimization-section-wrapper.disabled {
+  pointer-events: none;
+}
+
+.optimization-section-wrapper.disabled .card {
+  opacity: 0.4;
+  filter: grayscale(60%);
+}
+
+.optimization-section-wrapper.disabled .optimization-overlay {
+  display: flex;
+}
+
+.optimization-overlay {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 22, 40, 0.6);
+  border-radius: 16px;
+  z-index: 10;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.optimization-overlay:hover {
+  background: rgba(10, 22, 40, 0.7);
+}
+
+.optimization-overlay-content {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 2rem;
+}
+
+.optimization-overlay-content .lock-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  opacity: 0.8;
+}
+
+.optimization-overlay-content p {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* ============================================
+   Select Hospital Modal
+   ============================================ */
+
+.select-hospital-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 2000;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.2s ease;
+}
+
+.select-hospital-modal.show {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.select-hospital-modal-content {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 20px;
+  padding: 2.5rem;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.select-hospital-modal-content .modal-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.select-hospital-modal-content h3 {
+  color: var(--text-primary);
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.select-hospital-modal-content p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.select-hospital-modal-content .modal-btn {
+  background: linear-gradient(135deg, var(--accent-gold), #c9a227);
+  border: none;
+  border-radius: 10px;
+  padding: 0.9rem 2.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.select-hospital-modal-content .modal-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.35);
+}
+
+/* ============================================
+   Onboarding Overlay - Step-by-Step Guide
+   ============================================ */
+
+.onboarding-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  animation: fadeIn 0.4s ease;
+}
+
+.onboarding-overlay.show {
+  display: block;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.onboarding-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+}
+
+/* Steps container */
+.onboarding-step {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Pointer tooltips */
+.onboarding-pointer {
+  position: absolute;
+  z-index: 10001;
+  animation: float 2s ease-in-out infinite;
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Step 1: Search bar pointer */
+.onboarding-pointer-search {
+  top: 85px;
+  right: 22%;
+}
+
+/* Step 2: Hospital list pointer (positioned above the list) */
+.onboarding-pointer-list-fixed {
+  position: fixed;
+  bottom: 180px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: float 2s ease-in-out infinite;
+}
+
+/* Step 3: Measures sections pointer */
+.onboarding-pointer-measures {
+  position: fixed;
+  top: 200px;
+  left: 35%;
+  animation: float 2s ease-in-out infinite;
+}
+
+/* Step 4: Calculate button pointer */
+.onboarding-pointer-calculate {
+  position: fixed;
+  top: 280px;
+  left: 25%;
+  animation: float 2s ease-in-out infinite;
+}
+
+/* Step 5: Optimization section pointer */
+.onboarding-pointer-optimization {
+  position: fixed;
+  top: 350px;
+  left: 35%;
+  animation: float 2s ease-in-out infinite;
+}
+
+/* Enhanced tooltip for steps */
+.onboarding-tooltip-step {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  min-width: 300px;
+  max-width: 350px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(212, 175, 55, 0.1);
+}
+
+/* Wider tooltip for steps with more content */
+.onboarding-tooltip-wide {
+  min-width: 340px;
+  max-width: 420px;
+}
+
+.onboarding-tooltip-step .onboarding-tooltip-icon {
+  font-size: 2rem;
+  margin-bottom: 0.25rem;
+}
+
+.onboarding-tooltip-step .onboarding-tooltip-content {
+  flex: 1;
+}
+
+.onboarding-tooltip-step .onboarding-tooltip-content h4 {
+  color: var(--accent-gold);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.onboarding-tooltip-step .onboarding-tooltip-content p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Tooltip actions (buttons, checkbox, step indicator) */
+.onboarding-tooltip-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.onboarding-step-indicator {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Next button */
+.onboarding-next-btn {
+  background: linear-gradient(135deg, var(--accent-gold), #c9a227);
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.onboarding-next-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+}
+
+/* Done button */
+.onboarding-done-btn {
+  background: linear-gradient(135deg, var(--accent-gold), #c9a227);
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.onboarding-done-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+}
+
+/* Inline checkbox for step 2 */
+.onboarding-checkbox-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  transition: color 0.2s ease;
+}
+
+.onboarding-checkbox-inline:hover {
+  color: var(--text-primary);
+}
+
+.onboarding-checkbox-inline input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: var(--accent-gold);
+}
+
+/* Arrows */
+.onboarding-arrow {
+  width: 0;
+  height: 0;
+  margin: 0 auto;
+}
+
+.onboarding-arrow-up {
+  border-left: 14px solid transparent;
+  border-right: 14px solid transparent;
+  border-bottom: 14px solid rgba(212, 175, 55, 0.6);
+  margin-bottom: 10px;
+  animation: bounce-up 1s ease-in-out infinite;
+}
+
+@keyframes bounce-up {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.onboarding-arrow-down {
+  border-left: 14px solid transparent;
+  border-right: 14px solid transparent;
+  border-top: 14px solid rgba(212, 175, 55, 0.6);
+  margin-top: 10px;
+  animation: bounce-down 1s ease-in-out infinite;
+}
+
+@keyframes bounce-down {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .onboarding-pointer-search {
+    top: 130px;
+    right: 5%;
+  }
+
+  .onboarding-pointer-list-fixed {
+    bottom: 150px;
+  }
+
+  .onboarding-tooltip-step {
+    min-width: 260px;
+    max-width: 300px;
+    padding: 1rem 1.25rem;
+  }
+
+  .onboarding-tooltip-step .onboarding-tooltip-content h4 {
+    font-size: 1rem;
+  }
+
+  .onboarding-tooltip-step .onboarding-tooltip-content p {
+    font-size: 0.85rem;
+  }
+}

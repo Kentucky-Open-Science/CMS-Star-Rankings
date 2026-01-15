@@ -30,6 +30,9 @@ const MEASURE_GROUPS = {
     ]
 };
 
+// Track whether a hospital has been selected
+let hospitalSelected = false;
+
 // Map section IDs to group names
 const SECTION_TO_GROUP = {
     'mortality': 'mortality',
@@ -284,9 +287,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load hospital list FIRST to ensure we have names for lookup
     await loadHospitalList();
 
-    // Autofill University of Kentucky (180067)
-    loadHospitalData('180067');
-
     // Setup and load hospital table
     setupTableControls();
     loadHospitalTable();
@@ -296,7 +296,202 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Load optimization config (measures)
     loadOptimizationConfig();
+
+    // Setup optimization overlay click handler
+    setupOptimizationOverlay();
+
+    // Show onboarding overlay if user hasn't dismissed it and no hospital selected
+    showOnboardingIfNeeded();
 });
+
+// ============================================
+// Onboarding Overlay Functions - 5-Step Guided Tour
+// ============================================
+
+const ONBOARDING_STORAGE_KEY = 'cmsStarRatings_hideOnboarding';
+let onboardingWaitingForHospital = false;
+
+/**
+ * Check if onboarding should be shown and display it
+ */
+function showOnboardingIfNeeded() {
+    // Check if user has selected "don't show again"
+    const hideOnboarding = localStorage.getItem(ONBOARDING_STORAGE_KEY) === 'true';
+
+    // Check if a hospital has already been selected
+    const heading = document.getElementById('hospital-name-heading');
+    const hospitalAlreadySelected = heading && heading.textContent.includes('Star Rating for') && !heading.textContent.includes('Calculate Your');
+
+    // Show onboarding only if not hidden and no hospital selected
+    if (!hideOnboarding && !hospitalAlreadySelected) {
+        showOnboarding();
+    }
+}
+
+/**
+ * Show the onboarding overlay starting from step 1
+ */
+function showOnboarding() {
+    const overlay = document.getElementById('onboarding-overlay');
+    if (overlay) {
+        // Reset all steps to hidden except step 1
+        hideAllOnboardingSteps();
+        const step1 = document.getElementById('onboarding-step-1');
+        if (step1) step1.style.display = 'block';
+
+        overlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+/**
+ * Hide all onboarding steps
+ */
+function hideAllOnboardingSteps() {
+    for (let i = 1; i <= 5; i++) {
+        const step = document.getElementById(`onboarding-step-${i}`);
+        if (step) step.style.display = 'none';
+    }
+}
+
+/**
+ * Navigate to a specific onboarding step
+ */
+function goToOnboardingStep(stepNumber) {
+    // Hide all steps first
+    hideAllOnboardingSteps();
+
+    // Allow scrolling for transitions
+    document.body.style.overflow = '';
+
+    // Handle positioning based on step
+    switch (stepNumber) {
+        case 2:
+            // Scroll to hospital list
+            const hospitalSection = document.querySelector('.top-hospitals-section');
+            if (hospitalSection) {
+                hospitalSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            break;
+        case 3:
+            // Scroll to top to show measures
+            window.scrollTo({ top: 200, behavior: 'smooth' });
+            break;
+        case 4:
+            // Scroll to calculate button
+            const calcBtn = document.querySelector('.calculate-btn');
+            if (calcBtn) {
+                calcBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            break;
+        case 5:
+            // Scroll to optimization section
+            const optSection = document.getElementById('optimization-wrapper');
+            if (optSection) {
+                optSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            break;
+    }
+
+    // Show the target step after a brief delay
+    setTimeout(() => {
+        const targetStep = document.getElementById(`onboarding-step-${stepNumber}`);
+        if (targetStep) {
+            targetStep.style.display = 'block';
+        }
+        document.body.style.overflow = 'hidden';
+    }, 400);
+}
+
+/**
+ * Dismiss onboarding temporarily - waiting for hospital selection
+ */
+function dismissOnboardingForHospitalSelect() {
+    const overlay = document.getElementById('onboarding-overlay');
+
+    // Mark that we're waiting for hospital load to continue
+    onboardingWaitingForHospital = true;
+
+    // Hide overlay
+    if (overlay) {
+        overlay.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => {
+            overlay.classList.remove('show');
+            overlay.style.animation = '';
+            document.body.style.overflow = '';
+            hideAllOnboardingSteps();
+        }, 280);
+    }
+}
+
+/**
+ * Trigger the post-hospital-load onboarding steps (3-5)
+ * Called from loadHospitalData when a hospital is loaded
+ */
+function triggerPostHospitalOnboarding() {
+    // Only continue if we were waiting for hospital selection
+    if (!onboardingWaitingForHospital) return;
+
+    // Check if user previously said don't show again
+    const hideOnboarding = localStorage.getItem(ONBOARDING_STORAGE_KEY) === 'true';
+    if (hideOnboarding) {
+        onboardingWaitingForHospital = false;
+        return;
+    }
+
+    // Reset the flag
+    onboardingWaitingForHospital = false;
+
+    // Small delay to let the hospital data load and render
+    setTimeout(() => {
+        const overlay = document.getElementById('onboarding-overlay');
+        if (overlay) {
+            hideAllOnboardingSteps();
+            overlay.classList.add('show');
+
+            // Scroll to top first
+            window.scrollTo({ top: 200, behavior: 'smooth' });
+
+            // Show step 3 after scroll
+            setTimeout(() => {
+                const step3 = document.getElementById('onboarding-step-3');
+                if (step3) step3.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }, 400);
+        }
+    }, 500);
+}
+
+/**
+ * Dismiss the onboarding overlay completely
+ */
+function dismissOnboarding() {
+    const overlay = document.getElementById('onboarding-overlay');
+    const dontShowCheckbox = document.getElementById('onboarding-dont-show');
+
+    // Save preference if checkbox is checked
+    if (dontShowCheckbox && dontShowCheckbox.checked) {
+        localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
+    }
+
+    // Reset waiting flag
+    onboardingWaitingForHospital = false;
+
+    // Hide overlay with animation
+    if (overlay) {
+        overlay.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => {
+            overlay.classList.remove('show');
+            overlay.style.animation = '';
+            document.body.style.overflow = '';
+            hideAllOnboardingSteps();
+
+            // Reset step 1 for next time
+            const step1 = document.getElementById('onboarding-step-1');
+            if (step1) step1.style.display = 'block';
+        }, 280);
+    }
+}
 
 
 // Apply tooltips to static measure labels in the form
@@ -742,8 +937,14 @@ async function loadHospitalData(providerId) {
             btnOptimize.style.cursor = 'pointer';
         }
 
+        // Enable the optimization section (hospital is now selected)
+        enableOptimizationSection();
+
         // Auto-calculate after loading
         calculateRating();
+
+        // Continue the guided tour if user was waiting for hospital selection
+        triggerPostHospitalOnboarding();
 
     } catch (error) {
         console.error('Error loading hospital data:', error);
@@ -1234,5 +1435,61 @@ window.onclick = function (event) {
     if (event.target == modal) {
         closeModal();
     }
+
+    // Also close select hospital modal if clicking outside
+    const selectHospitalModal = document.getElementById('select-hospital-modal');
+    if (event.target == selectHospitalModal) {
+        closeSelectHospitalModal();
+    }
 }
 
+// ============================================
+// Optimization Section Gating Functions
+// ============================================
+
+// Enable the optimization section after a hospital is selected
+function enableOptimizationSection() {
+    hospitalSelected = true;
+    const wrapper = document.getElementById('optimization-wrapper');
+    if (wrapper) {
+        wrapper.classList.remove('disabled');
+    }
+}
+
+// Disable the optimization section (used if needed to reset)
+function disableOptimizationSection() {
+    hospitalSelected = false;
+    const wrapper = document.getElementById('optimization-wrapper');
+    if (wrapper) {
+        wrapper.classList.add('disabled');
+    }
+}
+
+// Setup the overlay click handler to show modal
+function setupOptimizationOverlay() {
+    const overlay = document.getElementById('optimization-overlay');
+    if (overlay) {
+        // Re-enable pointer events on the overlay itself
+        overlay.style.pointerEvents = 'auto';
+        overlay.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showSelectHospitalModal();
+        });
+    }
+}
+
+// Show the "Select Hospital First" modal
+function showSelectHospitalModal() {
+    const modal = document.getElementById('select-hospital-modal');
+    if (modal) {
+        modal.classList.add('show');
+    }
+}
+
+// Close the "Select Hospital First" modal
+function closeSelectHospitalModal() {
+    const modal = document.getElementById('select-hospital-modal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+}

@@ -415,130 +415,143 @@
                 </button>
 
                 <!-- Optimization Configuration -->
-                <div class="card measure-section" style="margin-top: 2rem; border-top: 4px solid var(--accent-gold);">
-                    <div class="measure-header" onclick="toggleSection('optimization-config')">
-                        <div class="measure-header-left">
-                            <div class="measure-icon" style="background: linear-gradient(135deg, #7c3aed, #5b21b6);">🚀
-                            </div>
-                            <div class="measure-title">
-                                <h3>Optimization Configuration</h3>
-                                <p>Target rating, budget, and measure costs</p>
-                            </div>
-                        </div>
-                        <svg class="chevron" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                        </svg>
-                    </div>
-
-                    <div class="measure-content expanded" id="optimization-config-content">
-                        <div style="padding: 1.5rem;">
-
-                            <!-- Goal & Budget -->
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-                                <div>
-                                    <label
-                                        style="display: block; color: var(--text-secondary); font-size: 0.75rem; font-weight: 500; margin-bottom: 0.5rem;">OPTIMIZATION
-                                        GOAL</label>
-
-                                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                                        <label
-                                            style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-primary);">
-                                            <input type="radio" name="target_mode" value="next_star" checked
-                                                onchange="toggleTargetScoreInput()">
-                                            Reach Next Star Rating
-                                        </label>
-                                        <label
-                                            style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-primary);">
-                                            <input type="radio" name="target_mode" value="specific_score"
-                                                onchange="toggleTargetScoreInput()">
-                                            Target Specific Score
-                                        </label>
-                                    </div>
-
-                                    <div id="target-score-container"
-                                        style="margin-top: 0.5rem; display: none; padding-left: 1.5rem;">
-                                        <input type="number" step="0.01" id="target_score"
-                                            placeholder="Enter target (e.g. -0.25)"
-                                            style="background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: white; padding: 0.5rem; border-radius: 6px; width: 100%;">
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label for="budget-input"
-                                        style="display: block; color: var(--text-secondary); font-size: 0.75rem; font-weight: 500; margin-bottom: 0.5rem;">TOTAL
-                                        BUDGET ($)</label>
-                                    <input type="number" id="budget-input" value="1000000" step="100000"
-                                        style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: white; padding: 0.75rem; border-radius: 8px; font-size: 1rem;">
-                                </div>
-                            </div>
-
-                            <!-- Actionable Measures -->
-                            <div style="margin-bottom: 2rem;">
-                                <div
-                                    style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.5rem;">
-                                    <label
-                                        style="color: var(--text-secondary); font-size: 0.75rem; font-weight: 500;">ACTIONABLE
-                                        MEASURES</label>
-                                    <button class="load-btn-sm" onclick="toggleAll('actionable', true)"
-                                        style="font-size: 0.7rem;">Select All</button>
-                                </div>
-                                <div
-                                    style="background: rgba(0,0,0,0.2); border: 1px solid var(--card-border); border-radius: 8px; overflow: visible;">
-                                    <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
-                                        <thead
-                                            style="background: rgba(255,255,255,0.05); color: var(--text-secondary);">
-                                            <tr>
-                                                <th style="padding: 0.75rem; text-align: left; width: 40px;"></th>
-                                                <th style="padding: 0.75rem; text-align: left;">Measure</th>
-                                                <th style="padding: 0.75rem; text-align: right; width: 150px;">Cost per
-                                                    0.1 SD ($)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="opt-actionable-tbody">
-                                            <!-- Steps will be populated by JS -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <!-- Other Measures -->
-                            <div>
-                                <div
-                                    style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.5rem;">
-                                    <label
-                                        style="color: var(--text-secondary); font-size: 0.75rem; font-weight: 500;">OTHER
-                                        MEASURES</label>
-                                    <button class="load-btn-sm" onclick="toggleTable('opt-other-tbody')"
-                                        id="btn-toggle-other">Show/Hide</button>
-                                </div>
-                                <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--card-border); border-radius: 8px; overflow: visible; display: none;"
-                                    id="opt-other-container">
-                                    <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
-                                        <thead
-                                            style="background: rgba(255,255,255,0.05); color: var(--text-secondary);">
-                                            <tr>
-                                                <th style="padding: 0.75rem; text-align: left; width: 40px;"></th>
-                                                <th style="padding: 0.75rem; text-align: left;">Measure</th>
-                                                <th style="padding: 0.75rem; text-align: right; width: 150px;">Cost per
-                                                    0.1 SD ($)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="opt-other-tbody">
-                                            <!-- Steps will be populated by JS -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <button type="button" id="btn-optimize" class="calculate-btn" onclick="optimizeRating()"
-                                disabled
-                                style="background: linear-gradient(135deg, #7c3aed, #5b21b6); margin-top: 2rem; opacity: 0.5; cursor: not-allowed;">
-                                Run Optimization
-                            </button>
+                <div class="optimization-section-wrapper disabled" id="optimization-wrapper">
+                    <div class="optimization-overlay" id="optimization-overlay">
+                        <div class="optimization-overlay-content">
+                            <div class="lock-icon">🔒</div>
+                            <p>Select a hospital to enable optimization</p>
                         </div>
                     </div>
-                </div>
+                    <div class="card measure-section"
+                        style="margin-top: 2rem; border-top: 4px solid var(--accent-gold);">
+                        <div class="measure-header" onclick="toggleSection('optimization-config')">
+                            <div class="measure-header-left">
+                                <div class="measure-icon"
+                                    style="background: linear-gradient(135deg, #7c3aed, #5b21b6);">🚀
+                                </div>
+                                <div class="measure-title">
+                                    <h3>Optimization Configuration</h3>
+                                    <p>Target rating, budget, and measure costs</p>
+                                </div>
+                            </div>
+                            <svg class="chevron" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                            </svg>
+                        </div>
+
+                        <div class="measure-content expanded" id="optimization-config-content">
+                            <div style="padding: 1.5rem;">
+
+                                <!-- Goal & Budget -->
+                                <div
+                                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                                    <div>
+                                        <label
+                                            style="display: block; color: var(--text-secondary); font-size: 0.75rem; font-weight: 500; margin-bottom: 0.5rem;">OPTIMIZATION
+                                            GOAL</label>
+
+                                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                            <label
+                                                style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-primary);">
+                                                <input type="radio" name="target_mode" value="next_star" checked
+                                                    onchange="toggleTargetScoreInput()">
+                                                Reach Next Star Rating
+                                            </label>
+                                            <label
+                                                style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-primary);">
+                                                <input type="radio" name="target_mode" value="specific_score"
+                                                    onchange="toggleTargetScoreInput()">
+                                                Target Specific Score
+                                            </label>
+                                        </div>
+
+                                        <div id="target-score-container"
+                                            style="margin-top: 0.5rem; display: none; padding-left: 1.5rem;">
+                                            <input type="number" step="0.01" id="target_score"
+                                                placeholder="Enter target (e.g. -0.25)"
+                                                style="background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: white; padding: 0.5rem; border-radius: 6px; width: 100%;">
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label for="budget-input"
+                                            style="display: block; color: var(--text-secondary); font-size: 0.75rem; font-weight: 500; margin-bottom: 0.5rem;">TOTAL
+                                            BUDGET ($)</label>
+                                        <input type="number" id="budget-input" value="1000000" step="100000"
+                                            style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: white; padding: 0.75rem; border-radius: 8px; font-size: 1rem;">
+                                    </div>
+                                </div>
+
+                                <!-- Actionable Measures -->
+                                <div style="margin-bottom: 2rem;">
+                                    <div
+                                        style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.5rem;">
+                                        <label
+                                            style="color: var(--text-secondary); font-size: 0.75rem; font-weight: 500;">ACTIONABLE
+                                            MEASURES</label>
+                                        <button class="load-btn-sm" onclick="toggleAll('actionable', true)"
+                                            style="font-size: 0.7rem;">Select All</button>
+                                    </div>
+                                    <div
+                                        style="background: rgba(0,0,0,0.2); border: 1px solid var(--card-border); border-radius: 8px; overflow: visible;">
+                                        <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
+                                            <thead
+                                                style="background: rgba(255,255,255,0.05); color: var(--text-secondary);">
+                                                <tr>
+                                                    <th style="padding: 0.75rem; text-align: left; width: 40px;"></th>
+                                                    <th style="padding: 0.75rem; text-align: left;">Measure</th>
+                                                    <th style="padding: 0.75rem; text-align: right; width: 150px;">Cost
+                                                        per
+                                                        0.1 SD ($)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="opt-actionable-tbody">
+                                                <!-- Steps will be populated by JS -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Other Measures -->
+                                <div>
+                                    <div
+                                        style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.5rem;">
+                                        <label
+                                            style="color: var(--text-secondary); font-size: 0.75rem; font-weight: 500;">OTHER
+                                            MEASURES</label>
+                                        <button class="load-btn-sm" onclick="toggleTable('opt-other-tbody')"
+                                            id="btn-toggle-other">Show/Hide</button>
+                                    </div>
+                                    <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--card-border); border-radius: 8px; overflow: visible; display: none;"
+                                        id="opt-other-container">
+                                        <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
+                                            <thead
+                                                style="background: rgba(255,255,255,0.05); color: var(--text-secondary);">
+                                                <tr>
+                                                    <th style="padding: 0.75rem; text-align: left; width: 40px;"></th>
+                                                    <th style="padding: 0.75rem; text-align: left;">Measure</th>
+                                                    <th style="padding: 0.75rem; text-align: right; width: 150px;">Cost
+                                                        per
+                                                        0.1 SD ($)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="opt-other-tbody">
+                                                <!-- Steps will be populated by JS -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <button type="button" id="btn-optimize" class="calculate-btn" onclick="optimizeRating()"
+                                    disabled
+                                    style="background: linear-gradient(135deg, #7c3aed, #5b21b6); margin-top: 2rem; opacity: 0.5; cursor: not-allowed;">
+                                    Run Optimization
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- Close optimization-section-wrapper -->
             </div>
 
             <!-- Results Panel -->
@@ -763,6 +776,124 @@
                     <button onclick="closeModal()"
                         style="background: none; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 0.75rem 1.5rem; border-radius: 12px; cursor: pointer; margin-left: 0.5rem;">Close</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Select Hospital First Modal -->
+    <div id="select-hospital-modal" class="select-hospital-modal">
+        <div class="select-hospital-modal-content">
+            <div class="modal-icon">🏥</div>
+            <h3>Select a Hospital First</h3>
+            <p>Please search for and select a hospital from the dropdown above, or click "Load Data" on any hospital in
+                the list below to begin.</p>
+            <button class="modal-btn" onclick="closeSelectHospitalModal()">Got It</button>
+        </div>
+    </div>
+
+    <!-- Onboarding Overlay -->
+    <div id="onboarding-overlay" class="onboarding-overlay">
+        <div class="onboarding-backdrop"></div>
+
+        <!-- Step 1: Search bar -->
+        <div class="onboarding-step" id="onboarding-step-1">
+            <div class="onboarding-pointer onboarding-pointer-search">
+                <div class="onboarding-arrow onboarding-arrow-up"></div>
+                <div class="onboarding-tooltip onboarding-tooltip-step">
+                    <div class="onboarding-tooltip-icon">🔍</div>
+                    <div class="onboarding-tooltip-content">
+                        <h4>Search for a Hospital</h4>
+                        <p>Type a hospital name or ID to quickly find and load its data.</p>
+                    </div>
+                    <div class="onboarding-tooltip-actions">
+                        <span class="onboarding-step-indicator">Step 1 of 5</span>
+                        <button class="onboarding-next-btn" onclick="goToOnboardingStep(2)">Next →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Hospital list -->
+        <div class="onboarding-step" id="onboarding-step-2" style="display: none;">
+            <div class="onboarding-pointer onboarding-pointer-list-fixed">
+                <div class="onboarding-tooltip onboarding-tooltip-step">
+                    <div class="onboarding-tooltip-icon">📋</div>
+                    <div class="onboarding-tooltip-content">
+                        <h4>Browse Hospital List</h4>
+                        <p>Select a hospital and click "Load Data" to load its measures. Once loaded, the tour will
+                            continue.</p>
+                    </div>
+                    <div class="onboarding-tooltip-actions">
+                        <span class="onboarding-step-indicator">Step 2 of 5</span>
+                        <button class="onboarding-done-btn" onclick="dismissOnboardingForHospitalSelect()">Got
+                            It</button>
+                    </div>
+                </div>
+                <div class="onboarding-arrow onboarding-arrow-down"></div>
+            </div>
+        </div>
+
+        <!-- Step 3: Measure sections (shown after hospital loads) -->
+        <div class="onboarding-step" id="onboarding-step-3" style="display: none;">
+            <div class="onboarding-pointer onboarding-pointer-measures">
+                <div class="onboarding-tooltip onboarding-tooltip-step onboarding-tooltip-wide">
+                    <div class="onboarding-tooltip-icon">📊</div>
+                    <div class="onboarding-tooltip-content">
+                        <h4>Modify Measure Values</h4>
+                        <p>Click any section header to expand it. You can edit the measure values to see how changes
+                            affect your star rating. Each group contributes a weighted score.</p>
+                    </div>
+                    <div class="onboarding-tooltip-actions">
+                        <span class="onboarding-step-indicator">Step 3 of 5</span>
+                        <button class="onboarding-next-btn" onclick="goToOnboardingStep(4)">Next →</button>
+                    </div>
+                </div>
+                <div class="onboarding-arrow onboarding-arrow-down"></div>
+            </div>
+        </div>
+
+        <!-- Step 4: Calculate button -->
+        <div class="onboarding-step" id="onboarding-step-4" style="display: none;">
+            <div class="onboarding-pointer onboarding-pointer-calculate">
+                <div class="onboarding-tooltip onboarding-tooltip-step">
+                    <div class="onboarding-tooltip-icon">⭐</div>
+                    <div class="onboarding-tooltip-content">
+                        <h4>Calculate Star Rating</h4>
+                        <p>After modifying measures, click this button to recalculate. View your results in the panel on
+                            the right showing group scores and overall rating.</p>
+                    </div>
+                    <div class="onboarding-tooltip-actions">
+                        <span class="onboarding-step-indicator">Step 4 of 5</span>
+                        <button class="onboarding-next-btn" onclick="goToOnboardingStep(5)">Next →</button>
+                    </div>
+                </div>
+                <div class="onboarding-arrow onboarding-arrow-down"></div>
+            </div>
+        </div>
+
+        <!-- Step 5: Optimization section -->
+        <div class="onboarding-step" id="onboarding-step-5" style="display: none;">
+            <div class="onboarding-pointer onboarding-pointer-optimization">
+                <div class="onboarding-tooltip onboarding-tooltip-step onboarding-tooltip-wide">
+                    <div class="onboarding-tooltip-icon">🚀</div>
+                    <div class="onboarding-tooltip-content">
+                        <h4>Optimization Tools</h4>
+                        <p><strong>Goal:</strong> Choose to reach the next star rating or target a specific score.<br>
+                            <strong>Budget:</strong> Set your total improvement budget.<br>
+                            <strong>Measures:</strong> Check which measures to optimize and set cost per
+                            improvement.<br>
+                            Click "Run Optimization" to get recommendations!
+                        </p>
+                    </div>
+                    <div class="onboarding-tooltip-actions">
+                        <label class="onboarding-checkbox-inline">
+                            <input type="checkbox" id="onboarding-dont-show">
+                            <span>Don't show again</span>
+                        </label>
+                        <button class="onboarding-done-btn" onclick="dismissOnboarding()">Finish Tour</button>
+                    </div>
+                </div>
+                <div class="onboarding-arrow onboarding-arrow-up"></div>
             </div>
         </div>
     </div>
